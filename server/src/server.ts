@@ -1,8 +1,11 @@
 import http from 'http';
 import config from './config';
-import app from './app';
+import { app, server } from './app';
+import { connectDB } from './utils/db';
 
-const server = http.createServer(app);
+// Connect to MongoDB
+connectDB();
+
 const PORT = config.port;
 
 // Handle unhandled promise rejections

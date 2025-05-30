@@ -5,6 +5,7 @@ import "./globals.css"
 import { AuthProvider } from "@/features/auth/AuthContext"
 import { NotificationProvider } from "@/context/NotificationContext"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ChatProvider } from "@/features/chat/ChatContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,7 +25,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <NotificationProvider>{children}</NotificationProvider>
+            <NotificationProvider>
+              <ChatProvider>
+                {children}
+              </ChatProvider>
+            </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

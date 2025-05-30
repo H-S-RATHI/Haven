@@ -8,6 +8,7 @@ import { FeedTab } from "@/components/world/FeedTab"
 import { ReelsTab } from "@/components/world/ReelsTab"
 import { ExploreTab } from "@/components/world/ExploreTab"
 import { ProfileTab } from "@/components/world/ProfileTab"
+import { ChatWindow } from "@/features/chat/components/ChatWindow"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MessageCircle, Globe } from 'lucide-react'
 import { useAuth } from "@/features/auth/useAuth"
@@ -89,8 +90,15 @@ export default function WorldPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chats" className="p-0">
-                <MessagesTab />
+              <TabsContent value="chats" className="p-0 h-[calc(100vh-200px)]">
+                <div className="flex h-full">
+                  <div className="w-full md:w-96 border-r border-gray-200 dark:border-gray-800">
+                    <MessagesTab />
+                  </div>
+                  <div className="flex-1 hidden md:block">
+                    <ChatWindow />
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="status" className="p-0">
