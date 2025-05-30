@@ -30,13 +30,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Handle logout event from anywhere in the app
   useEffect(() => {
+    const handleLogoutEvent = () => {
+      // Clear user data
+      setUser(null)
+      localStorage.removeItem("user")
+      // Redirect to home page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    }
+
+    // Add event listener for logout
+    window.addEventListener('logout', handleLogoutEvent)
+
     // Check for existing session
     const savedUser = localStorage.getItem("user")
     if (savedUser) {
       setUser(JSON.parse(savedUser))
     }
     setIsLoading(false)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('logout', handleLogoutEvent)
+    }
   }, [])
 
   const login = async (phone: string, otp: string) => {
@@ -78,8 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    setUser(null)
-    localStorage.removeItem("user")
+    // Dispatch logout event which will be handled by the event listener
+    const event = new CustomEvent('logout');
+    window.dispatchEvent(event);
   }
 
   const upgradeToCreator = async () => {

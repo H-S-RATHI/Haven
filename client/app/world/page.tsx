@@ -19,10 +19,27 @@ export default function WorldPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* WhatsApp-style Header */}
+      {/* Header with User Info and Logout */}
       <div className="bg-green-600 dark:bg-green-700 text-white p-4 shadow-lg">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
           <h1 className="text-xl font-semibold">SocialApp</h1>
+          <div className="flex items-center space-x-4">
+            {user && (
+              <span className="hidden sm:inline text-sm font-medium">
+                Welcome, {user.fullName}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                // This will be handled by the AuthProvider
+                const event = new CustomEvent('logout');
+                window.dispatchEvent(event);
+              }}
+              className="px-3 py-1.5 text-sm bg-white/20 hover:bg-white/30 rounded-md transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
