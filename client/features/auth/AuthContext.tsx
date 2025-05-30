@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || data.message || 'Login failed');
       }
 
       // For now, we'll use mock user data since our backend returns a simple success message

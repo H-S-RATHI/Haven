@@ -21,18 +21,17 @@ class TwilioService {
 
   public async sendOtp(phoneNumber: string, otp: string): Promise<boolean> {
     try {
-      // In development, log the OTP instead of sending SMS
+      // Log OTP in development for testing
       if (process.env.NODE_ENV !== 'production') {
         console.log(`OTP for ${phoneNumber}: ${otp}`);
-        return true;
       }
 
-      // In production, uncomment to send real SMS
-      // await this.client.messages.create({
-      //   body: `Your OTP for login is: ${otp}`,
-      //   from: config.twilio.phoneNumber,
-      //   to: phoneNumber,
-      // });
+      // Send SMS in both development and production
+      await this.client.messages.create({
+        body: `Your OTP for login your app is: ${otp}`,
+        from: config.twilio.phoneNumber,
+        to: phoneNumber,
+      });
       
       return true;
     } catch (error) {
