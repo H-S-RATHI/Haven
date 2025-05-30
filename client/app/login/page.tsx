@@ -19,19 +19,35 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const { login } = useAuth()
+  const [success, setSuccess] = useState("")
+  const { sendOtp, login } = useAuth()
   const router = useRouter()
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setSuccess("")
 
     try {
-      // Simulate OTP sending
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      setStep("otp")
+      // Format phone number to include country code if not present
+      let formattedPhone = phone.trim()
+      if (!formattedPhone.startsWith('+')) {
+        // Default to US country code if not provided
+        formattedPhone = `+1${formattedPhone.replace(/\D/g, '')}`
+      }
+
+      const { success, message } = await sendOtp(formattedPhone)
+      
+      if (success) {
+        setPhone(formattedPhone)
+        setStep("otp")
+        setSuccess(`OTP sent to ${formattedPhone}`)
+      } else {
+        setError(message || "Failed to send OTP. Please try again.")
+      }
     } catch (err) {
+      console.error('Error sending OTP:', err)
       setError("Failed to send OTP. Please try again.")
     } finally {
       setLoading(false)
@@ -42,18 +58,18 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setSuccess("")
 
     try {
-      // Simulate OTP verification
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      if (otp === "123456") {
-        await login(phone, otp)
+      const { success, message } = await login(phone, otp)
+      
+      if (success) {
         router.push("/world")
       } else {
-        setError("Invalid OTP. Please try again.")
+        setError(message || "Invalid OTP. Please try again.")
       }
     } catch (err) {
+      console.error('Login error:', err)
       setError("Login failed. Please try again.")
     } finally {
       setLoading(false)
@@ -91,8 +107,13 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="mb-4">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {success && (
+              <Alert className="mb-4">
+                <AlertDescription>{success}</AlertDescription>
               </Alert>
             )}
 

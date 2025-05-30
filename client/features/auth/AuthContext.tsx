@@ -16,12 +16,13 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  login: (phone: string, otp: string) => Promise<void>
-  signup: (userData: Partial<User>) => Promise<void>
-  logout: () => Promise<void>
-  upgradeToCreator: () => Promise<void>
+  user: User | null;
+  isLoading: boolean;
+  sendOtp: (phoneNumber: string) => Promise<{ success: boolean; message: string }>;
+  login: (phone: string, otp: string) => Promise<{ success: boolean; message: string }>;
+  signup: (userData: Partial<User>) => Promise<void>;
+  logout: () => Promise<void>;
+  upgradeToCreator: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -58,24 +59,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = async (phone: string, otp: string) => {
-    // Mock login - in real app, this would call your API
-    const mockUser: User = {
-      id: "1",
-      fullName: "John Doe",
-      username: "johndoe",
-      phone,
-      email: "john@example.com",
-      location: "New York, NY",
-      bio: "Just a regular user exploring the platform",
-      accountType: "normal",
-      verified: false,
-      joinedDate: new Date().toISOString(),
-    }
+  const sendOtp = async (phoneNumber: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber }),
+      });
 
-    setUser(mockUser)
-    localStorage.setItem("user", JSON.stringify(mockUser))
-  }
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to send OTP' 
+      };
+    }
+  };
+
+  const login = async (phone: string, otp: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: phone, otp }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // For now, we'll use mock user data since our backend returns a simple success message
+      // In a real app, you would use the user data from the response
+      const mockUser: User = {
+        id: "1",
+        fullName: "John Doe",
+        username: phone.replace(/\D/g, ''), // Use phone as username for now
+        phone,
+        email: `${phone.replace(/\D/g, '')}@example.com`,
+        location: "New York, NY",
+        bio: "Just a regular user exploring the platform",
+        accountType: "normal",
+        verified: true,
+        joinedDate: new Date().toISOString(),
+      };
+
+      setUser(mockUser);
+      localStorage.setItem("user", JSON.stringify(mockUser));
+      
+      return { success: true, message: 'Login successful' };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Login failed' 
+      };
+    }
+  };
 
   const signup = async (userData: Partial<User>) => {
     // Mock signup
@@ -115,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
+        sendOtp,
         login,
         signup,
         logout,
